@@ -14,6 +14,7 @@ import (
 	"github.com/asobti/kube-monkey/victims/factory/daemonsets"
 	"github.com/asobti/kube-monkey/victims/factory/deployments"
 	"github.com/asobti/kube-monkey/victims/factory/statefulsets"
+	"github.com/asobti/kube-monkey/victims/factory/replicasets"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -65,6 +66,15 @@ func EligibleVictims() (eligibleVictims []victims.Victim, err error) {
 			continue
 		}
 		eligibleVictims = append(eligibleVictims, daemonsets...)
+
+		// Fetch replicasets
+		replicasets, err := replicasets.EligibleReplicaSet(clientset, namespace, filter)
+		if err != nil {
+			//allow pass through to schedule other kinds and namespaces
+			glog.Warningf("Failed to fetch eligible replicasets for namespace %s due to error: %s", namespace, err.Error())
+			continue
+		}
+		eligibleVictims = append(eligibleVictims, replicasets...)
 	}
 
 	return
